@@ -24,6 +24,11 @@ import java.util.UUID;
 public class ParkingSpotController {
     ParkingSpotService parkingSpotService;
 
+    @GetMapping("/test")
+    public String test(){
+        return "Olá mundo!!";
+    }
+
     @PostMapping
     public ResponseEntity<Object> saveParkingSpot(@RequestBody ParkingSpotDTO parkingSpotDTO){
         if(parkingSpotService.existsByLicensePlateCar(parkingSpotDTO.getLicensePlateCar())){
