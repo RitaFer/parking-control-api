@@ -1,6 +1,8 @@
 package com.api.parkingcontrol.controllers;
 
 import com.api.parkingcontrol.dtos.ParkingSpotDTO;
+import com.api.parkingcontrol.exceptions.ParkingSpotConflitException;
+import com.api.parkingcontrol.exceptions.ParkingSpotNullException;
 import com.api.parkingcontrol.models.ParkingSpotModel;
 import com.api.parkingcontrol.services.ParkingSpotService;
 import lombok.SneakyThrows;
@@ -23,6 +25,11 @@ import java.util.UUID;
 @CrossOrigin(origins = "#", maxAge = 3600)
 @RequestMapping("/parking-spot")
 public class ParkingSpotController {
+    final ParkingSpotService parkingSpotService;
+
+    public ParkingSpotController(ParkingSpotService parkingSpotService) {
+        this.parkingSpotService = parkingSpotService;
+    }
 
     @GetMapping("/test")
     public String test(){

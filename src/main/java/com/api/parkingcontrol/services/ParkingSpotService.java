@@ -5,7 +5,6 @@ import com.api.parkingcontrol.repositories.ParkingSpotRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,7 +12,11 @@ import java.util.UUID;
 @Service
 public class ParkingSpotService {
 
-    ParkingSpotRepository parkingSpotRepository;
+    final ParkingSpotRepository parkingSpotRepository;
+
+    public ParkingSpotService(ParkingSpotRepository parkingSpotRepository) {
+        this.parkingSpotRepository = parkingSpotRepository;
+    }
 
     @Transactional
     public ParkingSpotModel save(ParkingSpotModel parkingSpotModel) {
