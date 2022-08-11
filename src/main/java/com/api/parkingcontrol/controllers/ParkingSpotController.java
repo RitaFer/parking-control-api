@@ -3,6 +3,7 @@ package com.api.parkingcontrol.controllers;
 import com.api.parkingcontrol.dtos.ParkingSpotDTO;
 import com.api.parkingcontrol.models.ParkingSpotModel;
 import com.api.parkingcontrol.services.ParkingSpotService;
+import lombok.SneakyThrows;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,23 +23,20 @@ import java.util.UUID;
 @CrossOrigin(origins = "#", maxAge = 3600)
 @RequestMapping("/parking-spot")
 public class ParkingSpotController {
-    ParkingSpotService parkingSpotService;
 
     @GetMapping("/test")
     public String test(){
         return "Olá mundo!!";
     }
 
+    @SneakyThrows
     @PostMapping
-    public ResponseEntity<Object> saveParkingSpot(@RequestBody ParkingSpotDTO parkingSpotDTO){
-        if(parkingSpotService.existsByLicensePlateCar(parkingSpotDTO.getLicensePlateCar())){
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Conflito: Essa placa já está em uso!");
+    public ResponseEntity<Object> saveParkingSpot(@RequestBody ParkingSpotDTO parkingSpotDTO) {
+        if(parkingSpotService.existsByLicensePlateCar(parkingSpotDTO.getLicensePlateCar()) || parkingSpotService.existsByParkingSpotNumber(parkingSpotDTO.getParkingSpotNumber()) || parkingSpotService.existsByApartmentAndBlock(parkingSpotDTO.getApartment(), parkingSpotDTO.getBlock())){
+            throw new ParkingSpotConflitException();
         }
-        if(parkingSpotService.existsByParkingSpotNumber(parkingSpotDTO.getParkingSpotNumber())){
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Conflito: Essa vaga já está em uso!");
-        }
-        if(parkingSpotService.existsByApartmentAndBlock(parkingSpotDTO.getApartment(), parkingSpotDTO.getBlock())){
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Conflito: Essa vaga já possui registro para esse apartamento/bloco!");
+        if(parkingSpotDTO.getApartment() == null || parkingSpotDTO.getBlock() == null || parkingSpotDTO.getResponsibleName() == null || parkingSpotDTO.getParkingSpotNumber() == null || parkingSpotDTO.getLicensePlateCar() == null){
+            throw new ParkingSpotNullException();
         }
         ParkingSpotModel parkingSpotModel = new ParkingSpotModel();
         BeanUtils.copyProperties(parkingSpotDTO, parkingSpotModel);
@@ -54,6 +52,9 @@ public class ParkingSpotController {
     @GetMapping("/{id}")
     public ResponseEntity<Object> getParkingSpotById(@PathVariable(value = "id") UUID id){
         Optional<ParkingSpotModel> parkingSpotModelOptional = parkingSpotService.findById(id);
+        if (parkingSpotModelOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Vaga não encontrada.");
+        }
         return parkingSpotModelOptional.<ResponseEntity<Object>>map(parkingSpotModel -> ResponseEntity.status(HttpStatus.OK).body(parkingSpotModel)).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Vaga não encontrada."));
     }
 
